@@ -75,17 +75,14 @@ def tinyMazeSearch(problem):
 
 def depthFirstSearch(problem):
 
-    class DFSNode: 
-        costSoFar = 1
-        direct = Directions.NORTH
-        pos = (0, 0)
-        state = ((0,0), Directions.NORTH, 1)
+#State is just a position
+#Successors return the State, Direction, and cost
 
-        def __init__(self, c, d, p, s, pN):
-            costSoFar = c + 1
-            direct = d
-            pos = p
-            state = s
+    class DFSNode: 
+        def __init__(self, c, d, p, pN):
+            self.costSoFar = c + 1
+            self.direct = d
+            self.pos = p
             self.previousNode = pN
 
     #Sets up the Open and Closed queues
@@ -93,10 +90,10 @@ def depthFirstSearch(problem):
     closedNodes = Q()
 
     #sets up the first node and adds it to the list of open nodes
-    firstState = problem.getStartState()
-    firstNode = DFSNode(1, None, firstState[0], firstState, None)
+    firstNode = DFSNode(0, None, problem.getStartState(), None)
     openNodes.push(firstNode)
 
+    #Needs to be modified to search for the food
     while(not openNodes.isEmpty()): #Searches through all the nodes
 
         #Finds the oldest state and gets the successors from it
@@ -104,19 +101,23 @@ def depthFirstSearch(problem):
         connections = problem.getSuccessors(currentNode.pos) #Returns a list of states
 
         #Absolutely disgusting way of determining if the current node has been opened or closed
-        isNodeOpen = -1
-        for i in range(len(openNodes.list)):
-            if currentNode.pos[0] == openNodes.list[i].pos[0] and currentNode.pos[1] == openNodes.list[i].pos[1]:
-                isNodeOpen = i
 
-        isNodeClosed = -1
-        for i in range(len(closedNodes.list)):
-            if currentNode.pos[0] == closedNodes.list[i].pos[0] and currentNode.pos[1] == closedNodes.list[i].pos[1]:
-                isNodeClosed = i
+
 
         #Goes through the connections to the node and adds them to the appropriate list
         for state in connections:
-            stateAsNode = DFSNode(state[0], state[1], state[2], state, currentNode)
+            stateAsNode = DFSNode(currentNode.costSoFar+1, state[1], state[0], currentNode)
+
+            isNodeOpen = -1
+            for i in range(len(openNodes.list)):
+                if stateAsNode.pos[0] == openNodes.list[i].pos[0] and stateAsNode.pos[1] == openNodes.list[i].pos[1]:
+                    isNodeOpen = i
+
+            isNodeClosed = -1
+            for i in range(len(closedNodes.list)):
+                if stateAsNode.pos[0] == closedNodes.list[i].pos[0] and stateAsNode.pos[1] == closedNodes.list[i].pos[1]:
+                    isNodeClosed = i
+
             if not (isNodeOpen == -1):
                 #if the node is already open check to see if the cost of the node in the list is lower then our current connection
                 prevNode = openNodes.list[isNodeOpen]
@@ -142,16 +143,17 @@ def depthFirstSearch(problem):
         closedNodes.push(currentNode)
 
     #End of While Loop
-
     #Finds the node that is the destination
-    current = closedNodes.list[0]
+    current = None
     for node in closedNodes.list:
-        if problem.isGoalState(node.state):
+        if problem.isGoalState(node.pos):
             current = node
-    
+
+    if current == None:
+        return None
     #Builds an inverted path of directions
     path = []
-    while(current.previousNode != None):
+    while(not current == None):
         path.append(current.direct)
         current = current.previousNode
 
@@ -159,9 +161,7 @@ def depthFirstSearch(problem):
     revPath = []
     for i in range(len(path)):
         revPath.append(path.pop())
-
-
-    return revPath
+    return revPath[1:]
     """
     #Tester information?
     #print("Start:", problem.getStartState())
