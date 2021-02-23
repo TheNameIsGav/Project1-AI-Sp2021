@@ -98,16 +98,13 @@ def depthFirstSearch(problem):
 
         #Finds the oldest state and gets the successors from it
         currentNode = openNodes.list[0]
-        connections = problem.getSuccessors(currentNode.pos) #Returns a list of states
-
-        #Absolutely disgusting way of determining if the current node has been opened or closed
-
-
+        connections = problem.getSuccessors(currentNode.pos) #Returns a list of positions that we can move to
 
         #Goes through the connections to the node and adds them to the appropriate list
         for state in connections:
             stateAsNode = DFSNode(currentNode.costSoFar+1, state[1], state[0], currentNode)
 
+            #Figures out if the node is in the open or closed lists
             isNodeOpen = -1
             for i in range(len(openNodes.list)):
                 if stateAsNode.pos[0] == openNodes.list[i].pos[0] and stateAsNode.pos[1] == openNodes.list[i].pos[1]:
@@ -117,7 +114,9 @@ def depthFirstSearch(problem):
             for i in range(len(closedNodes.list)):
                 if stateAsNode.pos[0] == closedNodes.list[i].pos[0] and stateAsNode.pos[1] == closedNodes.list[i].pos[1]:
                     isNodeClosed = i
-
+            ######
+            
+            #Checks to see what the condition is, the node is either open, closed, or neither. If open or closed, check to see if we're cheaper
             if not (isNodeOpen == -1):
                 #if the node is already open check to see if the cost of the node in the list is lower then our current connection
                 prevNode = openNodes.list[isNodeOpen]
@@ -138,26 +137,29 @@ def depthFirstSearch(problem):
                 openNodes.push(stateAsNode)
 
         #End of For Loop
-
+        #Processing for "currentNode" node
         openNodes.list.remove(currentNode)
         closedNodes.push(currentNode)
 
     #End of While Loop
+
     #Finds the node that is the destination
     current = None
     for node in closedNodes.list:
         if problem.isGoalState(node.pos):
             current = node
 
+    #Checks to see if we could find a path
     if current == None:
         return None
+
     #Builds an inverted path of directions
     path = []
     while(not current == None):
         path.append(current.direct)
         current = current.previousNode
 
-    #reverses the path so that we can follow it
+    #reverses the path so that we can follow it (and removes None from the end)
     revPath = []
     for i in range(len(path)):
         revPath.append(path.pop())
