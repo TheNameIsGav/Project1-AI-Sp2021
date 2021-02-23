@@ -17,6 +17,7 @@ In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
 
+from game import Directions
 import util
 from util import Queue as Q
 
@@ -68,35 +69,105 @@ def tinyMazeSearch(problem):
     Returns a sequence of moves that solves tinyMaze.  For any other maze, the
     sequence of moves will be incorrect, so only use this for tinyMaze.
     """
-    from game import Directions
     s = Directions.SOUTH
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
 def depthFirstSearch(problem):
-    openStates = Q
-    closedStates = Q
 
-    Q.push(openStates, problem.getStateState()) #Appends the starts state to the list of "open" states
+    class DFSNode: 
+        costSoFar = 1
+        direct = Directions.NORTH
+        pos = (0, 0)
+        state = ((0,0), Directions.NORTH, 1)
 
-    while(len(openStates) > 0):
+        def __init__(self, c, d, p, s, pN):
+            costSoFar = c + 1
+            direct = d
+            pos = p
+            state = s
+            self.previousNode = pN
+
+    #Sets up the Open and Closed queues
+    openNodes = Q()
+    closedNodes = Q()
+
+    #sets up the first node and adds it to the list of open nodes
+    firstState = problem.getStartState()
+    firstNode = DFSNode(1, None, firstState[0], firstState, None)
+    openNodes.push(firstNode)
+
+    while(not openNodes.isEmpty()): #Searches through all the nodes
 
         #Finds the oldest state and gets the successors from it
-        currentState = Q.pop(openStates) 
-        nextStates = currentState.getSuccessors(currentState)
+        currentNode = openNodes.list[0]
+        connections = problem.getSuccessors(currentNode.pos) #Returns a list of states
 
-        for state in nextStates:
-            if state in openStates.list:
-                continue
-            elif state in closedStates.list:
-                continue
+        #Absolutely disgusting way of determining if the current node has been opened or closed
+        isNodeOpen = -1
+        for i in range(len(openNodes.list)):
+            if currentNode.pos[0] == openNodes.list[i].pos[0] and currentNode.pos[1] == openNodes.list[i].pos[1]:
+                isNodeOpen = i
+
+        isNodeClosed = -1
+        for i in range(len(closedNodes.list)):
+            if currentNode.pos[0] == closedNodes.list[i].pos[0] and currentNode.pos[1] == closedNodes.list[i].pos[1]:
+                isNodeClosed = i
+
+        #Goes through the connections to the node and adds them to the appropriate list
+        for state in connections:
+            stateAsNode = DFSNode(state[0], state[1], state[2], state, currentNode)
+            if not (isNodeOpen == -1):
+                #if the node is already open check to see if the cost of the node in the list is lower then our current connection
+                prevNode = openNodes.list[isNodeOpen]
+                if prevNode.costSoFar <= stateAsNode.costSoFar:
+                    continue
+                else:
+                    openNodes.list[isNodeOpen] = stateAsNode
+
+            elif not (isNodeClosed == -1):
+                #if the node is closed, check to see if our root is less expensive, and if so then reopen it
+                prevNode = closedNodes.list[isNodeClosed]
+                if prevNode.costSoFar <= stateAsNode.costSoFar:
+                    continue
+                else:
+                    closedNodes.list.pop(isNodeClosed)
+                    openNodes.push(stateAsNode)
             else:
-                q.push(openStates, state)
+                openNodes.push(stateAsNode)
 
-        """    
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))"""
+        #End of For Loop
+
+        openNodes.list.remove(currentNode)
+        closedNodes.push(currentNode)
+
+    #End of While Loop
+
+    #Finds the node that is the destination
+    current = closedNodes.list[0]
+    for node in closedNodes.list:
+        if problem.isGoalState(node.state):
+            current = node
+    
+    #Builds an inverted path of directions
+    path = []
+    while(current.previousNode != None):
+        path.append(current.direct)
+        current = current.previousNode
+
+    #reverses the path so that we can follow it
+    revPath = []
+    for i in range(len(path)):
+        revPath.append(path.pop())
+
+
+    return revPath
+    """
+    #Tester information?
+    #print("Start:", problem.getStartState())
+    #print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
+    #print("Start's successors:", problem.getSuccessors(problem.getStartState()))"""
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
