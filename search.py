@@ -18,6 +18,7 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
+from util import Queue as Q
 
 class SearchProblem:
     """
@@ -73,21 +74,29 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 def depthFirstSearch(problem):
-    """
-    Search the deepest nodes in the search tree first.
+    openStates = Q
+    closedStates = Q
 
-    Your search algorithm needs to return a list of actions that reaches the
-    goal. Make sure to implement a graph search algorithm.
+    Q.push(openStates, problem.getStateState()) #Appends the starts state to the list of "open" states
 
-    To get started, you might want to try some of these simple commands to
-    understand the search problem that is being passed in:
+    while(len(openStates) > 0):
 
+        #Finds the oldest state and gets the successors from it
+        currentState = Q.pop(openStates) 
+        nextStates = currentState.getSuccessors(currentState)
+
+        for state in nextStates:
+            if state in openStates.list:
+                continue
+            elif state in closedStates.list:
+                continue
+            else:
+                q.push(openStates, state)
+
+        """    
     print("Start:", problem.getStartState())
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
-    """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    print("Start's successors:", problem.getSuccessors(problem.getStartState()))"""
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
