@@ -75,12 +75,19 @@ def tinyMazeSearch(problem):
 
 def depthFirstSearch(problem):
 
-#State is just a position
-#Successors return the State, Direction, and cost
+    #State is just a position
+    #Successors return the State, Direction, and cost
+
+    """
+    #Tester information?
+    #print("Start:", problem.getStartState())
+    #print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
+    #print("Start's successors:", problem.getSuccessors(problem.getStartState()))"""
+
 
     class DFSNode: 
         def __init__(self, c, d, p, pN):
-            self.costSoFar = c + 1
+            self.costSoFar = c
             self.direct = d
             self.pos = p
             self.previousNode = pN
@@ -164,22 +171,182 @@ def depthFirstSearch(problem):
     for i in range(len(path)):
         revPath.append(path.pop())
     return revPath[1:]
-    """
-    #Tester information?
-    #print("Start:", problem.getStartState())
-    #print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    #print("Start's successors:", problem.getSuccessors(problem.getStartState()))"""
-
 
 def breadthFirstSearch(problem):
-    """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    class DFSNode: 
+        def __init__(self, c, d, p, pN):
+            self.costSoFar = c
+            self.direct = d
+            self.pos = p
+            self.previousNode = pN
+
+    #Sets up the Open and Closed queues
+    openNodes = Q()
+    closedNodes = Q()
+
+    #sets up the first node and adds it to the list of open nodes
+    firstNode = DFSNode(0, None, problem.getStartState(), None)
+    openNodes.push(firstNode)
+
+    #Needs to be modified to search for the food
+    while(not openNodes.isEmpty()): #Searches through all the nodes
+
+        #Finds the oldest state and gets the successors from it
+        currentNode = openNodes.list[-1]
+        connections = problem.getSuccessors(currentNode.pos) #Returns a list of positions that we can move to
+
+        #Goes through the connections to the node and adds them to the appropriate list
+        for state in connections:
+            stateAsNode = DFSNode(currentNode.costSoFar+1, state[1], state[0], currentNode)
+
+            #Figures out if the node is in the open or closed lists
+            isNodeOpen = -1
+            for i in range(len(openNodes.list)):
+                if stateAsNode.pos[0] == openNodes.list[i].pos[0] and stateAsNode.pos[1] == openNodes.list[i].pos[1]:
+                    isNodeOpen = i
+
+            isNodeClosed = -1
+            for i in range(len(closedNodes.list)):
+                if stateAsNode.pos[0] == closedNodes.list[i].pos[0] and stateAsNode.pos[1] == closedNodes.list[i].pos[1]:
+                    isNodeClosed = i
+            ######
+            
+            #Checks to see what the condition is, the node is either open, closed, or neither. If open or closed, check to see if we're cheaper
+            if not (isNodeOpen == -1):
+                #if the node is already open check to see if the cost of the node in the list is lower then our current connection
+                prevNode = openNodes.list[isNodeOpen]
+                if prevNode.costSoFar <= stateAsNode.costSoFar:
+                    continue
+                else:
+                    openNodes.list[isNodeOpen] = stateAsNode
+
+            elif not (isNodeClosed == -1):
+                #if the node is closed, check to see if our root is less expensive, and if so then reopen it
+                prevNode = closedNodes.list[isNodeClosed]
+                if prevNode.costSoFar <= stateAsNode.costSoFar:
+                    continue
+                else:
+                    closedNodes.list.pop(isNodeClosed)
+                    openNodes.push(stateAsNode)
+            else:
+                openNodes.push(stateAsNode)
+
+        #End of For Loop
+        #Processing for "currentNode" node
+        openNodes.list.remove(currentNode)
+        closedNodes.push(currentNode)
+
+    #End of While Loop
+
+    #Finds the node that is the destination
+    current = None
+    for node in closedNodes.list:
+        if problem.isGoalState(node.pos):
+            current = node
+
+    #Checks to see if we could find a path
+    if current == None:
+        return None
+
+    #Builds an inverted path of directions
+    path = []
+    while(not current == None):
+        path.append(current.direct)
+        current = current.previousNode
+
+    #reverses the path so that we can follow it (and removes None from the end)
+    revPath = []
+    for i in range(len(path)):
+        revPath.append(path.pop())
+    return revPath[1:]
 
 def uniformCostSearch(problem):
-    """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    class DFSNode: 
+        def __init__(self, c, d, p, pN):
+            self.costSoFar = c
+            self.direct = d
+            self.pos = p
+            self.previousNode = pN
+
+    #Sets up the Open and Closed queues
+    openNodes = Q()
+    closedNodes = Q()
+
+    #sets up the first node and adds it to the list of open nodes
+    firstNode = DFSNode(0, None, problem.getStartState(), None)
+    openNodes.push(firstNode)
+
+    #Needs to be modified to search for the food
+    while(not openNodes.isEmpty()): #Searches through all the nodes
+
+        #Finds the oldest state and gets the successors from it
+        currentNode = openNodes.list[0]
+        connections = problem.getSuccessors(currentNode.pos) #Returns a list of positions that we can move to
+
+        #Goes through the connections to the node and adds them to the appropriate list
+        for state in connections:
+            stateAsNode = DFSNode(currentNode.costSoFar+state[2], state[1], state[0], currentNode)
+
+            #Figures out if the node is in the open or closed lists
+            isNodeOpen = -1
+            for i in range(len(openNodes.list)):
+                if stateAsNode.pos[0] == openNodes.list[i].pos[0] and stateAsNode.pos[1] == openNodes.list[i].pos[1]:
+                    isNodeOpen = i
+
+            isNodeClosed = -1
+            for i in range(len(closedNodes.list)):
+                if stateAsNode.pos[0] == closedNodes.list[i].pos[0] and stateAsNode.pos[1] == closedNodes.list[i].pos[1]:
+                    isNodeClosed = i
+            ######
+            
+            #Checks to see what the condition is, the node is either open, closed, or neither. If open or closed, check to see if we're cheaper
+            if not (isNodeOpen == -1):
+                #if the node is already open check to see if the cost of the node in the list is lower then our current connection
+                prevNode = openNodes.list[isNodeOpen]
+                if prevNode.costSoFar <= stateAsNode.costSoFar:
+                    continue
+                else:
+                    openNodes.list[isNodeOpen] = stateAsNode
+
+            elif not (isNodeClosed == -1):
+                #if the node is closed, check to see if our root is less expensive, and if so then reopen it
+                prevNode = closedNodes.list[isNodeClosed]
+                if prevNode.costSoFar <= stateAsNode.costSoFar:
+                    continue
+                else:
+                    closedNodes.list.pop(isNodeClosed)
+                    openNodes.push(stateAsNode)
+            else:
+                openNodes.push(stateAsNode)
+
+        #End of For Loop
+        #Processing for "currentNode" node
+        openNodes.list.remove(currentNode)
+        closedNodes.push(currentNode)
+
+    #End of While Loop
+
+    #Finds the node that is the destination
+    current = None
+    for node in closedNodes.list:
+        if problem.isGoalState(node.pos):
+            current = node
+
+    #Checks to see if we could find a path
+    if current == None:
+        return None
+
+    #Builds an inverted path of directions
+    path = []
+    while(not current == None):
+        path.append(current.direct)
+        current = current.previousNode
+
+    #reverses the path so that we can follow it (and removes None from the end)
+    revPath = []
+    for i in range(len(path)):
+        revPath.append(path.pop())
+    return revPath[1:]
 
 def nullHeuristic(state, problem=None):
     """
