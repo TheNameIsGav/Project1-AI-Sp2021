@@ -281,6 +281,19 @@ def uniformCostSearch(problem):
 
         #Finds the oldest state and gets the successors from it
         currentNode = openNodes.list[0]
+        """
+        NodeInformation current = open.get(0);
+			 for(NodeInformation temp : open) {
+				 if (temp.estimatedTotalCost < current.estimatedTotalCost){
+					 current = temp;
+				 }
+			 }
+			 
+			 // If it is the goal node, then terminate
+			 if (current.myPoint == endPos){
+				 break;
+			 }
+        """
         connections = problem.getSuccessors(currentNode.pos) #Returns a list of positions that we can move to
 
         #Goes through the connections to the node and adds them to the appropriate list
