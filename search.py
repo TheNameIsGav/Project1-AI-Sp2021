@@ -78,13 +78,6 @@ def depthFirstSearch(problem):
     #State is just a position
     #Successors return the State, Direction, and cost
 
-    """
-    #Tester information?
-    #print("Start:", problem.getStartState())
-    #print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    #print("Start's successors:", problem.getSuccessors(problem.getStartState()))"""
-
-
     class DFSNode: 
         def __init__(self, c, d, p, pN):
             self.costSoFar = c
@@ -282,6 +275,7 @@ def uniformCostSearch(problem):
         #Finds the oldest state and gets the successors from it
         currentNode = openNodes.list[0]
         connections = problem.getSuccessors(currentNode.pos) #Returns a list of positions that we can move to
+
 
         #Goes through the connections to the node and adds them to the appropriate list
         for state in connections:
