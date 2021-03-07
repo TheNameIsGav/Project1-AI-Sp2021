@@ -355,98 +355,37 @@ def nullHeuristic(state, problem=None):
     return 0
 
 def aStarSearch(problem, heuristic=nullHeuristic):
-    class DFSNode: 
-        def __init__(self, c, d, p, pN, state, etc):
-            self.costSoFar = c
-            self.direct = d
-            self.pos = p
-            self.state = state
-            self.previousNode = pN
-            self.estimatedCost = etc
-
-    #Sets up the Open and Closed queues
-    openNodes = Q()
-    closedNodes = Q()
-
-    #sets up the first node and adds it to the list of open nodes
-    firstNode = DFSNode(0, None, problem.getStartState(), None, None, 0)
-    openNodes.push(firstNode)
-
-    #Needs to be modified to search for the food
-    while(not openNodes.isEmpty()): #Searches through all the nodes
-
-        #Finds the oldest state and gets the successors from it
-        currentNode = openNodes.list[0]
-        for n in openNodes.list:
-            if n.estimatedCost <= currentNode.estimatedCost:
-                currentNode = n
-
-        connections = problem.getSuccessors(currentNode.pos) #Returns a list of positions that we can move to
-
-        #Goes through the connections to the node and adds them to the appropriate list
-        for state in connections:
-            stateAsNode = DFSNode(currentNode.costSoFar+state[2], state[1], state[0], currentNode, state, heuristic(state[0], problem))
-
-            #Figures out if the node is in the open or closed lists
-            isNodeOpen = -1
-            for i in range(len(openNodes.list)):
-                if stateAsNode.pos[0] == openNodes.list[i].pos[0] and stateAsNode.pos[1] == openNodes.list[i].pos[1]:
-                    isNodeOpen = i
-
-            isNodeClosed = -1
-            for i in range(len(closedNodes.list)):
-                if stateAsNode.pos[0] == closedNodes.list[i].pos[0] and stateAsNode.pos[1] == closedNodes.list[i].pos[1]:
-                    isNodeClosed = i
-            ######
-            
-            #Checks to see what the condition is, the node is either open, closed, or neither. If open or closed, check to see if we're cheaper
-            if not (isNodeOpen == -1):
-                #if the node is already open check to see if the cost of the node in the list is lower then our current connection
-                prevNode = openNodes.list[isNodeOpen]
-                if prevNode.costSoFar <= stateAsNode.costSoFar:
-                    continue
-                else:
-                    openNodes.list[isNodeOpen] = stateAsNode
-
-            elif not (isNodeClosed == -1):
-                #if the node is closed, check to see if our root is less expensive, and if so then reopen it
-                prevNode = closedNodes.list[isNodeClosed]
-                if prevNode.costSoFar <= stateAsNode.costSoFar:
-                    continue
-                else:
-                    closedNodes.list.pop(isNodeClosed)
-                    openNodes.push(stateAsNode)
-            else:
-                openNodes.push(stateAsNode)
-
-        #End of For Loop
-        #Processing for "currentNode" node
-        openNodes.list.remove(currentNode)
-        closedNodes.push(currentNode)
-
-    #End of While Loop
-
-    #Finds the node that is the destination
-    current = None
-    for node in closedNodes.list:
-        if problem.isGoalState(node.pos):
-            current = node
-
-    #Checks to see if we could find a path
-    if current == None:
-        return None
-
-    #Builds an inverted path of directions
     path = []
-    while(not current == None):
-        path.append(current.direct)
-        current = current.previousNode
+    closedNodes = set()
+    hitNodes = util.Queue()
+    openNodes = util.PriorityQueue()
+    firstState = (problem.getStartState(), path, 0)
+    openNodes.push(firstState, 0) #Enters new state and its prio
+    hitNodes.push((problem.getStartState(), path))
+    while openNodes:
+        (currPos, currPath, currCost) = openNodes.pop() #gets highest value node
+        hitNodes.pop()
 
-    #reverses the path so that we can follow it (and removes None from the end)
-    revPath = []
-    for i in range(len(path)):
-        revPath.append(path.pop())
-    return revPath[1:]
+        if currPos not in closedNodes: #close the node if we haven't been here before, handles cheaper paths bc pQueue
+            closedNodes.add(currPos)
+            path = currPath
+        if problem.isGoalState(currPos): #Rebuild the path if goal found
+            c = [i[1] for i in path]
+            return c
+
+        for (pos, direction, thisCost) in problem.getSuccessors(currPos): #For every neighbor
+            if pos not in closedNodes: #Check to see that we haven't closed it already
+                notInClosed = False
+                for x in hitNodes.list: #Check to see that we don't double expand nodes, can't be open nodes bc it won't be a neighbor of itself
+                    if pos == x[0] and thisCost > x[2]:
+                        notInClosed = True
+                if not notInClosed:
+                    d = currPath[:] #Copy the array so we don't overwrite in the future
+                    d.append((pos, direction))
+                    cost = currCost + thisCost + heuristic(pos, problem) #Estimated distance + cost to get to this array + previous cost
+                    newState = (pos, d, currCost + thisCost)
+                    openNodes.push(newState, cost)
+                    hitNodes.push(newState)
 
 
 # Abbreviations
