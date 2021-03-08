@@ -365,12 +365,11 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     while openNodes:
         (currPos, currPath, currCost) = openNodes.pop() #gets highest value node
         hitNodes.pop()
-
         if currPos not in closedNodes: #close the node if we haven't been here before, handles cheaper paths bc pQueue
             closedNodes.add(currPos)
             path = currPath
         if problem.isGoalState(currPos): #Rebuild the path if goal found
-            c = [i[1] for i in path]
+            c = [i[1] for i in path] #i[1] is direction in (pos, direction)
             return c
 
         for (pos, direction, thisCost) in problem.getSuccessors(currPos): #For every neighbor
@@ -381,7 +380,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                         notInClosed = True
                 if not notInClosed:
                     d = currPath[:] #Copy the array so we don't overwrite in the future
-                    d.append((pos, direction))
+                    d.append((pos, direction)) #appends to path
                     cost = currCost + thisCost + heuristic(pos, problem) #Estimated distance + cost to get to this array + previous cost
                     newState = (pos, d, currCost + thisCost)
                     openNodes.push(newState, cost)
