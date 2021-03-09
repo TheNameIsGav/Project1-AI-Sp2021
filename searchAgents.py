@@ -270,7 +270,7 @@ def euclideanHeuristic(position, problem, info={}):
 
 class CornersProblem(search.SearchProblem):
 
-    def __init__(self, startingGameState):
+    def __init__(self, startingGameState):# copied AND given
         print(startingGameState)
         self.walls = startingGameState.getWalls()
         self.startingPosition = startingGameState.getPacmanPosition()
@@ -280,15 +280,15 @@ class CornersProblem(search.SearchProblem):
         self.startState = startingGameState
 
     def getStartState(self):
-        return (self.startingPosition[0], self.startingPosition[1], (True, True, True, True)) 
+        return (self.startingPosition[0], self.startingPosition[1], (True, True, True, True)) #x, y, WALLS TRUE
 
-    def isGoalState(self, state):
+    def isGoalState(self, state): #checks the state to see if we're at a wall or not
         for i in state[2]:
             if i == True:
                 return False
         return True
 
-    def getSuccessors(self, state):
+    def getSuccessors(self, state): #basically copied from earlier sections
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             x,y,z = state
@@ -304,9 +304,10 @@ class CornersProblem(search.SearchProblem):
             successors.append(((nextx, nexty, tuple(nextTup)), action, 1))
 
         self._expanded += 1
+        print(self._expanded)
         return successors
 
-    def getCostOfActions(self, actions):
+    def getCostOfActions(self, actions): #copied from ealier problems
         if actions == None: return 999999
         x,y= self.startingPosition
         for action in actions:
@@ -317,16 +318,8 @@ class CornersProblem(search.SearchProblem):
 
 def cornersHeuristic(state, problem):
 
-    corners = problem.corners # These are the corner coordinates
-    print(state)
-    (x,y,z) = state #pull (pos, direction, cost) out of state
-    maxDistance = 0
-    for i in range(len(corners)):
-        thisDistance = mazeDistance((x, y), corners[i], problem.startState) #Random start state, doesn't matter
-        if state[2][i]:
-            if thisDistance > maxDistance:
-                maxDistance = thisDistance
-    return maxDistance
+    util.raiseNotDefined()
+    return  0
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
