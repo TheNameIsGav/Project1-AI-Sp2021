@@ -293,15 +293,14 @@ class CornersProblem(search.SearchProblem):
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             x,y,z = state
             dx, dy = Actions.directionToVector(action)
-            nextx, nexty = int(x + dx), int(y + dy)
-            hitsWall = self.walls[nextx][nexty]
-            if hitsWall:
+            hits = self.walls[int(x + dx)][int(y + dy)]
+            if hits:
                 continue
-            nextTup = list(state[2])
+            tup = list(state[2])
             for i in range(len(self.corners)):
-                if (nextx, nexty) == self.corners[i]:
-                    nextTup[i] = False
-            successors.append(((nextx, nexty, tuple(nextTup)), action, 1))
+                if (int(x + dx), int(y + dy)) == self.corners[i]:
+                    tup[i] = False
+            successors.append(((int(x + dx), int(y + dy), tuple(tup)), action, 1))
 
         self._expanded += 1
         print(self._expanded)
