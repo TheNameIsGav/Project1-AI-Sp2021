@@ -398,14 +398,22 @@ def cornersHeuristic(state, problem):
     notVisited = ()
         
     for i,corner in enumerate(corners):
-        if not visited.i == True:
-            notVisited.append(corner)
+        if not visited.i == True:   #if we have not already visited that corner
+            notVisited.append(corner)   #add that corner to list of notVisited corners
+            smallCost = 9999999999
+        for corner in notVisited:   #calculate manhattan distance for that corner
+            xDistance = corner[0] - state[0] # find x distance by subtracting current x coordinate from corner x coordinate, needs abs value
+            yDistance = corner[1] - state[1]# # find y distance by subtracting current y coordinate from corner y coordinate, needs abs value
+            totalDistance = xDistance + yDistance
+            if totalDistance < smallCost:
+                smallCost = totalDistance
+    return smallCost
         
     #gotta find that close corner :D
     #return that distance!
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    # return 0 # Default to trivial solution
 
     #input: state problem and all the stuff from before
     #problem: visit closest corner to packman that has not yet been visited
