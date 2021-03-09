@@ -268,6 +268,8 @@ def euclideanHeuristic(position, problem, info={}):
 # This portion is incomplete.  Time to write code!  #
 #####################################################
 
+#############################################################################################################################################################
+
 class CornersProblem(search.SearchProblem):
     """
     This search problem finds paths through all four corners of a layout.
@@ -279,32 +281,55 @@ class CornersProblem(search.SearchProblem):
         """
         Stores the walls, pacman's starting position and corners.
         """
-        self.walls = startingGameState.getWalls()
-        self.startingPosition = startingGameState.getPacmanPosition()
-        top, right = self.walls.height-2, self.walls.width-2
-        self.corners = ((1,1), (1,top), (right, 1), (right, top))
+        self.walls = startingGameState.getWalls()                       #where the walls are
+        self.startingPosition = startingGameState.getPacmanPosition()   #where pacman is
+        top, right = self.walls.height-2, self.walls.width-2            #top right of any maze
+        self.corners = ((1,1), (1,top), (right, 1), (right, top))       #location of each corner
         for corner in self.corners:
             if not startingGameState.hasFood(*corner):
                 print('Warning: no food in corner ' + str(corner))
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
-        # Please add any code here which you would like to use
-        # in initializing the problem
-        "*** YOUR CODE HERE ***"
 
-    def getStartState(self):
+        self.visited = (False,False,False,False)
+
+        # Please add any code here which you would like to use in initializing the problem
+        "*** YOUR CODE HERE ***"
+        #define the goal
+        #goal 1, is if in a corner
+        #goal 2, is if no corners left
+        #input: walls(x coordinates and y coordiates), pacman location, corner locations 
+        #corners = (topLeft, topRight, bottomLeft, startCorner)
+        #problem: make a representation of the corners, make a list of the corners. List of list(x,y) integer,integer,boolean
+        #output: list of the corners
+        #make them triples for the corner. List (x,y,have we been there (false))
+        # self.cornerList = list of corners
+
+
+    def getStartState(self):  #self is the packman. where the packman is, how many points, and how many lives, etc. This information changes as the game goes.
         """
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        return self.startingPosition, self.corners, self.visited
+
+        util.raiseNotDefined()  #ignroing it stuff dont worry about it. Get rid of it later.
+        #input: self (where I am) list of corners
+        #problem just... this
+        #output: where I am at the start, and the list of corners
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        goal = False
+        if self.visited.contains(False):
+            goal = False
+        else:
+            goal = True
+
+        return goal
 
     def getSuccessors(self, state):
         """
@@ -316,18 +341,26 @@ class CornersProblem(search.SearchProblem):
             state, 'action' is the action required to get there, and 'stepCost'
             is the incremental cost of expanding to that successor
         """
-
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
+            # x,y = currentPlace
+            # dx, dy = Actions.directionToVector(action)
+            # nextx, nexty = int(x + dx), int(y + dy)
 
-            "*** YOUR CODE HERE ***"
-
+            currentPlace = state[0]
+            dx, dy = Actions.directionToVector(action)  # where I would be if I move that direction
+            nextx, nexty = int(x + dx), int(y + dy)
+            if not self.wall.contains((nextx,nexty)):   # if not a wall
+                i = 0
+                for corner in self.corners:             # if its a corner
+                    if (nextx,nexty) == corner:
+                        self.visited.i = True #mark that corner!
+                    i += 1
+                nextPosition = (nextx,nexty)
+                cost = 1
+                successors.append((nextPosition,action,cost))
         self._expanded += 1 # DO NOT CHANGE
         return successors
 
@@ -344,7 +377,6 @@ class CornersProblem(search.SearchProblem):
             if self.walls[x][y]: return 999999
         return len(actions)
 
-
 def cornersHeuristic(state, problem):
     """
     A heuristic for the CornersProblem that you defined.
@@ -358,11 +390,31 @@ def cornersHeuristic(state, problem):
     shortest path from the state to a goal of the problem; i.e.  it should be
     admissible (as well as consistent).
     """
+    
+    currentPosition = state[0]
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
+    visited = state[2]
+    notVisited = ()
+        
+    for i,corner in enumerate(corners):
+        if not visited.i == True:
+            notVisited.append(corner)
+        
+    #gotta find that close corner :D
+    #return that distance!
 
     "*** YOUR CODE HERE ***"
     return 0 # Default to trivial solution
+
+    #input: state problem and all the stuff from before
+    #problem: visit closest corner to packman that has not yet been visited
+    #output: heuristic value (int)
+
+    #heuristic is a value assigned to an action
+    #return number
+
+#############################################################################################################################################################
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
