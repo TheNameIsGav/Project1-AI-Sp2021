@@ -403,7 +403,7 @@ def cornersHeuristic(state, problem):
             smallCost = 9999999999
         for corner in notVisited:   #calculate manhattan distance for that corner
             xDistance = corner[0] - state[0] # find x distance by subtracting current x coordinate from corner x coordinate, needs abs value
-            yDistance = corner[1] - state[1]# # find y distance by subtracting current y coordinate from corner y coordinate, needs abs value
+            yDistance = corner[1] - state[1] # find y distance by subtracting current y coordinate from corner y coordinate, needs abs value
             totalDistance = xDistance + yDistance
             if totalDistance < smallCost:
                 smallCost = totalDistance
