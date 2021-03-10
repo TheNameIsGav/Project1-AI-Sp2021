@@ -42,6 +42,8 @@ from game import Actions
 import util
 import time
 import search
+import math
+import sys
 
 class GoWestAgent(Agent):
     "An agent that goes West until it can't."
@@ -269,44 +271,43 @@ def euclideanHeuristic(position, problem, info={}):
 #####################################################
 
 class CornersProblem(search.SearchProblem):
-
-    def __init__(self, startingGameState):# copied AND given
-        print(startingGameState)
+    def __init__(self, startingGameState):
+        """
+        Stores the walls, pacman's starting position and corners.
+        """
         self.walls = startingGameState.getWalls()
         self.startingPosition = startingGameState.getPacmanPosition()
         top, right = self.walls.height-2, self.walls.width-2
         self.corners = ((1,1), (1,top), (right, 1), (right, top))
-        self._expanded = 0 # Number of search nodes expanded
-        self.startState = startingGameState
+        self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
+        self.startstate = (self.startingPosition, self.corners)
 
     def getStartState(self):
-        return (self.startingPosition[0], self.startingPosition[1], (True, True, True, True)) #x, y, WALLS TRUE
 
-    def isGoalState(self, state): #checks the state to see if we're at a wall or not
-        for i in state[2]:
-            if i == True:
-                return False
-        return True
+        return self.startstate
 
-    def getSuccessors(self, state): #basically copied from earlier sections
+    def isGoalState(self, state):
+
+        return len(state[1]) == 0
+
+    def getSuccessors(self, state):
+
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            x,y,z = state
+            x,y = state[0]
             dx, dy = Actions.directionToVector(action)
-            hits = self.walls[int(x + dx)][int(y + dy)]
-            if hits:
-                continue
-            tup = list(state[2])
-            for i in range(len(self.corners)):
-                if (int(x + dx), int(y + dy)) == self.corners[i]:
-                    tup[i] = False
-            successors.append(((int(x + dx), int(y + dy), tuple(tup)), action, 1))
+            hitsWall = self.walls[int(x + dx)][int(y + dy)] #figure out if we hit a wall
+            if not hitsWall: #if we dont - no point in interating further 
+                nonvisited = [] #create list of non=vistied walls
+                for i in state[1]: #for wall in state
+                    if not i == (int(x + dx), int(y + dy)): #check to see if we're actually at a corner
+                        nonvisited.append(i) #append if we're not
+                successors.append( ( ((int(x + dx), int(y + dy)), tuple(nonvisited)), action, 1) ) #push all the info back into the list
 
-        self._expanded += 1
-        print(self._expanded)
+        self._expanded += 1 # DO NOT CHANGE
         return successors
 
-    def getCostOfActions(self, actions): #copied from ealier problems
+    def getCostOfActions(self, actions):
         if actions == None: return 999999
         x,y= self.startingPosition
         for action in actions:
@@ -316,10 +317,27 @@ class CornersProblem(search.SearchProblem):
         return len(actions)
 
 def cornersHeuristic(state, problem):
-
     util.raiseNotDefined()
-    return  0
 
+""" Original Code
+    currentPosition = state[0]
+    corners = problem.corners # These are the corner coordinates
+    walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
+    visited = state[2]
+    notVisited = ()
+        
+    for i,corner in enumerate(corners):
+        if not visited.i == True:   #if we have not already visited that corner
+            notVisited.append(corner)   #add that corner to list of notVisited corners
+            smallCost = 9999999999
+        for corner in notVisited:   #calculate manhattan distance for that corner
+            xDistance = corner[0] - state[0] # find x distance by subtracting current x coordinate from corner x coordinate, needs abs value
+            yDistance = corner[1] - state[1] # find y distance by subtracting current y coordinate from corner y coordinate, needs abs value
+            totalDistance = xDistance + yDistance
+            if totalDistance < smallCost:
+                smallCost = totalDistance
+    return smallCost
+"""
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
     def __init__(self):
