@@ -276,6 +276,7 @@ class CornersProblem(search.SearchProblem):
         Stores the walls, pacman's starting position and corners.
         """
         self.walls = startingGameState.getWalls()
+        self.startingGameState = startingGameState
         self.startingPosition = startingGameState.getPacmanPosition()
         top, right = self.walls.height-2, self.walls.width-2
         self.corners = ((1,1), (1,top), (right, 1), (right, top))
@@ -320,39 +321,21 @@ class CornersProblem(search.SearchProblem):
         return len(actions)
 
 def cornersHeuristic(state, problem):
-    util.raiseNotDefined()
-    corners = problem.corners # These are the corner coordinates
-    smallCost = sys.maxsize
 
-    for corner in corners:   #calculate manhattan distance for that corner
-        if corner == state[0]:
-            problem.corners_dictionary[corner] = True
-        if not (problem.corners_dictionary[corner]):
-            totalDistance = mazeDistance(state[0], corner, problem.starting_state)
-            if totalDistance < smallCost:
-                smallCost = totalDistance
-    return smallCost
+    ((x, y), existingCorners) = state
+    if len(existingCorners) == 0: #If we're at the goal state return 0
+        return 0
+
+    ret = 0 #Otherwise set a default value
+    for (cx, cy) in existingCorners: #Find the corner that is furthest
+        #distance = math.sqrt(pow((cx - x), 2) + pow( (cy - y) , 2) ) gives us slightly worse statistics at 1241
+        distance = abs(cx - x) + abs( cy - y ) #opens 1136 nodes
+        if ret < distance:
+            ret = distance
+    #for some reason changing this from closest to furthest gives us a better score? I am not sure why
+    return ret #Return that furthest distance
 
 
-""" Original Code
-    currentPosition = state[0]
-    corners = problem.corners # These are the corner coordinates
-    walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
-    visited = state[2]
-    notVisited = ()
-        
-    for i,corner in enumerate(corners):
-        if not visited.i == True:   #if we have not already visited that corner
-            notVisited.append(corner)   #add that corner to list of notVisited corners
-            smallCost = 9999999999
-        for corner in notVisited:   #calculate manhattan distance for that corner
-            xDistance = corner[0] - state[0] # find x distance by subtracting current x coordinate from corner x coordinate, needs abs value
-            yDistance = corner[1] - state[1] # find y distance by subtracting current y coordinate from corner y coordinate, needs abs value
-            totalDistance = xDistance + yDistance
-            if totalDistance < smallCost:
-                smallCost = totalDistance
-    return smallCost
-"""
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
     def __init__(self):

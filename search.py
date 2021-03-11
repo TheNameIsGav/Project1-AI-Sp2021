@@ -128,37 +128,22 @@ def nullHeuristic(state, problem=None):
     return 0
 
 def aStarSearch(problem, heuristic=nullHeuristic):
-    path = []
-    closedNodes = set()
-    hitNodes = util.Queue()
-    openNodes = util.PriorityQueue()
-    firstState = (problem.getStartState(), path, 0)
-    openNodes.push(firstState, 0) #Enters new state and its prio
-    hitNodes.push((problem.getStartState(), path))
-    while openNodes:
-        (currPos, currPath, currCost) = openNodes.pop() #gets cheapest value node
-        hitNodes.pop()
-        if currPos not in closedNodes: #close the node if we haven't been here before, handles cheaper paths bc pQueue
-            closedNodes.add(currPos)
-            path = currPath
-        if problem.isGoalState(currPos): #Rebuild the path if goal found
-            c = [i[1] for i in path] #i[1] is direction in (pos, direction)
-            return c
+    startPos = problem.getStartState()
+    pq = util.PriorityQueue()
+    closed = set()
 
-        for (pos, direction, thisCost) in problem.getSuccessors(currPos): #For every neighbor
-            if pos not in closedNodes: #Check to see that we haven't closed it already
-                notInClosed = False
-                for x in hitNodes.list: #Check to see that we don't double expand nodes, can't be open nodes bc it won't be a neighbor of itself
-                    if pos == x[0] and thisCost > x[2]:
-                        notInClosed = True
-                if not notInClosed:
-                    d = currPath[:] #Copy the array so we don't overwrite in the future
-                    d.append((pos, direction)) #appends to path
-                    cost = currCost + thisCost + heuristic(pos, problem) #Estimated distance + cost to get to this array + previous cost
-                    newState = (pos, d, currCost + thisCost)
-                    openNodes.push(newState, cost)
-                    hitNodes.push(newState)
+    pq.push((startPos, [], 0), 0)
 
+    while not pq.isEmpty():
+        currPos, path, cost = pq.pop()
+        if problem.isGoalState(currPos):
+            return path
+        if not currPos in closed:
+            closed.add(currPos)
+            for newPos, direction, thisCost in problem.getSuccessors(currPos):
+                totalSteps = path + [direction]
+                costAndAction = cost + thisCost
+                pq.push((newPos, totalSteps, costAndAction), (costAndAction + heuristic(newPos, problem)))
 
 # Abbreviations
 bfs = breadthFirstSearch
