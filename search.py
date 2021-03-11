@@ -109,18 +109,20 @@ def breadthFirstSearch(problem):
 
 def uniformCostSearch(problem):
     closedNodes = set() #Same logic as before
-    openNodes = util.PriorityQueue() #use a PQueue to devise the highest value thing
+    openNodes = util.PriorityQueue() #use a PQueue to devise the lowest value thing
     startState = (problem.getStartState(), "", 1)
     startNode = (startState, [], 0)
     openNodes.push(startNode, 0) #Some extra shtuffs with cost
     while not openNodes.isEmpty():
-        currNodes = openNodes.pop() #"simplified" this, just didnt work withou
-        if problem.isGoalState(currNodes[0][0]): #"simplified"
-            return currNodes[1] #"simplified"
-        if currNodes[0][0] not in closedNodes: #"simplified"
-            closedNodes.add(currNodes[0][0]) #"simplified"
-            for state in problem.getSuccessors(currNodes[0][0]): #"simplified"
-                openNodes.push((state, currNodes[1] + [state[1]], currNodes[2] + state[2]), currNodes[2] + state[2]) #"Oh its not a string waaaah im python"
+        (prevState, prevPath, cost) = openNodes.pop() #prevState is (pos, Direction, cost)
+        currNodes = (prevState, prevPath, cost)
+        pos, direction, action = prevState
+        if problem.isGoalState(pos): #pos
+            return prevPath
+        if pos not in closedNodes:
+            closedNodes.add(pos)
+            for state in problem.getSuccessors(pos): #state is (pos, Direction to get here, cost)
+                openNodes.push((state, prevPath + [state[1]], cost + state[2]), cost + state[2]) #"Oh its not a string waaaah im python"
 
 def nullHeuristic(state, problem=None):
     return 0
@@ -134,7 +136,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     openNodes.push(firstState, 0) #Enters new state and its prio
     hitNodes.push((problem.getStartState(), path))
     while openNodes:
-        (currPos, currPath, currCost) = openNodes.pop() #gets highest value node
+        (currPos, currPath, currCost) = openNodes.pop() #gets cheapest value node
         hitNodes.pop()
         if currPos not in closedNodes: #close the node if we haven't been here before, handles cheaper paths bc pQueue
             closedNodes.add(currPos)
