@@ -281,6 +281,9 @@ class CornersProblem(search.SearchProblem):
         self.corners = ((1,1), (1,top), (right, 1), (right, top))
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
         self.startstate = (self.startingPosition, self.corners)
+        self.corners_dictionary = {}
+        for corner in self.corners:
+            self.corners_dictionary[corner] = False
 
     def getStartState(self):
 
@@ -318,6 +321,18 @@ class CornersProblem(search.SearchProblem):
 
 def cornersHeuristic(state, problem):
     util.raiseNotDefined()
+    corners = problem.corners # These are the corner coordinates
+    smallCost = sys.maxsize
+
+    for corner in corners:   #calculate manhattan distance for that corner
+        if corner == state[0]:
+            problem.corners_dictionary[corner] = True
+        if not (problem.corners_dictionary[corner]):
+            totalDistance = mazeDistance(state[0], corner, problem.starting_state)
+            if totalDistance < smallCost:
+                smallCost = totalDistance
+    return smallCost
+
 
 """ Original Code
     currentPosition = state[0]
@@ -409,7 +424,7 @@ def foodHeuristic(state, problem):
         #Gets given position and caluclates the distance to the position the food is at
         currDist = mazeDistance(position, (x,y), problem.startingGameState) #problem.startingGameState is just default, not used in mazeDistance
         if foodGrid[x][y]: #If food at x,y
-            if currDist > totalDistanceOfPath: #if our current path is longer than the total distance (rewards pQueue)
+            if currDist > totalDistanceOfPath: #if our current path is longer than the total distance (punishes pQueue for being farther away from food)
                 totalDistanceOfPath = currDist 
     return totalDistanceOfPath
 
