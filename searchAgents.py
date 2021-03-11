@@ -271,104 +271,47 @@ def euclideanHeuristic(position, problem, info={}):
 #############################################################################################################################################################
 
 class CornersProblem(search.SearchProblem):
-    """
-    This search problem finds paths through all four corners of a layout.
-
-    You must select a suitable state space and successor function
-    """
-
     def __init__(self, startingGameState):
         """
         Stores the walls, pacman's starting position and corners.
         """
-        self.walls = startingGameState.getWalls()                       #where the walls are
-        self.startingPosition = startingGameState.getPacmanPosition()   #where pacman is
-        top, right = self.walls.height-2, self.walls.width-2            #top right of any maze
-        self.corners = ((1,1), (1,top), (right, 1), (right, top))       #location of each corner
-        for corner in self.corners:
-            if not startingGameState.hasFood(*corner):
-                print('Warning: no food in corner ' + str(corner))
+        self.walls = startingGameState.getWalls()
+        self.startingPosition = startingGameState.getPacmanPosition()
+        top, right = self.walls.height-2, self.walls.width-2
+        self.corners = ((1, 1), (1,top), (right, 1), (right, top))
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
+        self.startstate = (self.startingPosition, self.corners)
+        self.starting_state = startingGameState
+        self.corners_dictionary = {}
+        for pos in self.corners:
+            self.corners_dictionary[pos] = False
 
-        self.visited = (False,False,False,False)
+    def getStartState(self):
 
-        # Please add any code here which you would like to use in initializing the problem
-        "*** YOUR CODE HERE ***"
-        #define the goal
-        #goal 1, is if in a corner
-        #goal 2, is if no corners left
-        #input: walls(x coordinates and y coordiates), pacman location, corner locations 
-        #corners = (topLeft, topRight, bottomLeft, startCorner)
-        #problem: make a representation of the corners, make a list of the corners. List of list(x,y) integer,integer,boolean
-        #output: list of the corners
-        #make them triples for the corner. List (x,y,have we been there (false))
-        # self.cornerList = list of corners
-
-
-    def getStartState(self):  #self is the packman. where the packman is, how many points, and how many lives, etc. This information changes as the game goes.
-        """
-        Returns the start state (in your state space, not the full Pacman state
-        space)
-        """
-        "*** YOUR CODE HERE ***"
-
-        return self.startingPosition, self.corners, self.visited
-
-        util.raiseNotDefined()  #ignroing it stuff dont worry about it. Get rid of it later.
-        #input: self (where I am) list of corners
-        #problem just... this
-        #output: where I am at the start, and the list of corners
+        return self.startstate
 
     def isGoalState(self, state):
-        """
-        Returns whether this search state is a goal state of the problem.
-        """
-        goal = False
-        if self.visited.contains(False):
-            goal = False
-        else:
-            goal = True
 
-        return goal
+        return len(state[1]) == 0
 
     def getSuccessors(self, state):
-        """
-        Returns successor states, the actions they require, and a cost of 1.
 
-         As noted in search.py:
-            For a given state, this should return a list of triples, (successor,
-            action, stepCost), where 'successor' is a successor to the current
-            state, 'action' is the action required to get there, and 'stepCost'
-            is the incremental cost of expanding to that successor
-        """
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            # Add a successor state to the successor list if the action is legal
-            # Here's a code snippet for figuring out whether a new position hits a wall:
-            # x,y = currentPlace
-            # dx, dy = Actions.directionToVector(action)
-            # nextx, nexty = int(x + dx), int(y + dy)
+            x,y = state[0]
+            dx, dy = Actions.directionToVector(action)
+            hitsWall = self.walls[int(x + dx)][int(y + dy)] #figure out if we hit a wall
+            if not hitsWall: #if we dont - no point in interating further 
+                nonvisited = [] #create list of non=vistied walls
+                for i in state[1]: #for wall in state
+                    if not i == (int(x + dx), int(y + dy)): #check to see if we're actually at a corner
+                        nonvisited.append(i) #append if we're not
+                successors.append( ( ((int(x + dx), int(y + dy)), tuple(nonvisited)), action, 1) ) #push all the info back into the list
 
-            currentPlace = state[0]
-            dx, dy = Actions.directionToVector(action)  # where I would be if I move that direction
-            nextx, nexty = int(x + dx), int(y + dy)
-            if not self.wall.contains((nextx,nexty)):   # if not a wall
-                i = 0
-                for corner in self.corners:             # if its a corner
-                    if (nextx,nexty) == corner:
-                        self.visited.i = True #mark that corner!
-                    i += 1
-                nextPosition = (nextx,nexty)
-                cost = 1
-                successors.append((nextPosition,action,cost))
         self._expanded += 1 # DO NOT CHANGE
         return successors
 
     def getCostOfActions(self, actions):
-        """
-        Returns the cost of a particular sequence of actions.  If those actions
-        include an illegal move, return 999999.  This is implemented for you.
-        """
         if actions == None: return 999999
         x,y= self.startingPosition
         for action in actions:
@@ -378,6 +321,30 @@ class CornersProblem(search.SearchProblem):
         return len(actions)
 
 def cornersHeuristic(state, problem):
+    util.raiseNotDefined()
+
+""" Original Code
+    currentPosition = state[0]
+    corners = problem.corners # These are the corner coordinates
+    walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
+    visited = state[2]
+    notVisited = ()
+        
+    for i,corner in enumerate(corners):
+        if not visited.i == True:   #if we have not already visited that corner
+            notVisited.append(corner)   #add that corner to list of notVisited corners
+            smallCost = 9999999999
+        for corner in notVisited:   #calculate manhattan distance for that corner
+            xDistance = corner[0] - state[0] # find x distance by subtracting current x coordinate from corner x coordinate, needs abs value
+            yDistance = corner[1] - state[1] # find y distance by subtracting current y coordinate from corner y coordinate, needs abs value
+            totalDistance = xDistance + yDistance
+            if totalDistance < smallCost:
+                smallCost = totalDistance
+    return smallCost
+"""
+
+def cornersHeuristic(state, problem):
+    
     """
     A heuristic for the CornersProblem that you defined.
 
@@ -394,17 +361,21 @@ def cornersHeuristic(state, problem):
     currentPosition = state[0]
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
-    visited = state[2]
+    #visited = state[2]
     notVisited = ()
+    smallCost = 9999999999
         
+    '''
     for i,corner in enumerate(corners):
         if not visited.i == True:   #if we have not already visited that corner
             notVisited.append(corner)   #add that corner to list of notVisited corners
             smallCost = 9999999999
-        for corner in notVisited:   #calculate manhattan distance for that corner
-            xDistance = corner[0] - state[0] # find x distance by subtracting current x coordinate from corner x coordinate, needs abs value
-            yDistance = corner[1] - state[1] # find y distance by subtracting current y coordinate from corner y coordinate, needs abs value
-            totalDistance = xDistance + yDistance
+    '''
+    for corner in corners:   #calculate manhattan distance for that corner
+        if corner == state[0]:
+            problem.corners_dictionary[corner] = True
+        if not (problem.corners_dictionary[corner]):
+            totalDistance = mazeDistance(state[0], corner, problem.starting_state)
             if totalDistance < smallCost:
                 smallCost = totalDistance
     return smallCost
